@@ -6,17 +6,16 @@
 #}
 
 
-#resource "google_project_service" "project" {
-#  for_each = toset([
-#    "sqladmin.googleapis.com",
-#    "container.googleapis.com"
-#  ])
-#
-#  project = var.gce_project
-#  service = each.key
-#
-#  disable_on_destroy = false
-#}
+resource "google_project_service" "project" {
+  for_each = toset([
+    "sqladmin.googleapis.com"
+  ])
+
+  project = var.gce_project
+  service = each.key
+
+  disable_on_destroy = false
+}
 
 resource "google_cloud_run_v2_service" "default" {
   name     = "cloudrun-service"

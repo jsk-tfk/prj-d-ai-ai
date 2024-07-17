@@ -22,10 +22,6 @@ variable "environment" {
   default = "acceptance"
 }
 
-variable "node_count" {
-  default = 1
-}
-
 variable "database_machine_type" {
   description = "Machine type of created database"
   default     = "db-f1-micro"
