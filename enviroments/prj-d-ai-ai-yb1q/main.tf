@@ -6,17 +6,17 @@
 #}
 
 
-resource "google_project_service" "project" {
-  for_each = toset([
-    "sqladmin.googleapis.com",
-    "container.googleapis.com"
-  ])
-
-  project = var.gce_project
-  service = each.key
-
-  disable_on_destroy = false
-}
+#resource "google_project_service" "project" {
+#  for_each = toset([
+#    "sqladmin.googleapis.com",
+#    "container.googleapis.com"
+#  ])
+#
+#  project = var.gce_project
+#  service = each.key
+#
+#  disable_on_destroy = false
+#}
 
 resource "google_cloud_run_v2_service" "default" {
   name     = "cloudrun-service"
@@ -88,7 +88,7 @@ resource "google_sql_database_instance" "instance" {
   region           = var.gce_region
   database_version = "POSTGRES_16"
   settings {
-    tier = "db-f1-micro"
+    tier = var.database_machine_type
   }
 
   deletion_protection  = "true"
