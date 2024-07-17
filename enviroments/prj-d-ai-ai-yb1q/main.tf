@@ -8,7 +8,8 @@
 
 resource "google_project_service" "project" {
   for_each = toset([
-    "sqladmin.googleapis.com"
+    "sqladmin.googleapis.com",
+    "secretmanager.googleapis.com"
   ])
 
   project = var.gce_project
