@@ -9,7 +9,8 @@
 resource "google_project_service" "project" {
   for_each = toset([
     "sqladmin.googleapis.com",
-    "secretmanager.googleapis.com"
+    "secretmanager.googleapis.com",
+    "servicenetworking.googleapis.com"
   ])
 
   project = var.gce_project
@@ -83,12 +84,42 @@ resource "google_secret_manager_secret_iam_member" "secret-access" {
   depends_on = [google_secret_manager_secret.secret]
 }
 
+resource "google_compute_network" "private_network" {
+  name = "ai-network"
+}
+
+resource "google_compute_global_address" "private_ip_address" {
+  provider = google-beta
+
+  name          = "ai-ip-address"
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
+  prefix_length = 16
+  network       = google_compute_network.private_network.id
+}
+
+resource "google_service_networking_connection" "private_vpc_connection" {
+  network                 = google_compute_network.private_network.id
+  service                 = "servicenetworking.googleapis.com"
+  reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
+}
+
+resource "random_id" "db_name_suffix" {
+  byte_length = 4
+}
 resource "google_sql_database_instance" "instance" {
-  name             = "cloudrun-sql"
+  name             = "cloudrun-ai-sql"
   region           = var.gce_region
-  database_version = "POSTGRES_16"
+  database_version = "POSTGRES_15"
+
+  depends_on = [google_service_networking_connection.private_vpc_connection]
   settings {
     tier = var.database_machine_type
+    ip_configuration {
+      ipv4_enabled                                  = false
+      private_network                               = google_compute_network.private_network.id
+      enable_private_path_for_google_cloud_services = true
+    }
   }
 
   deletion_protection  = "true"
