@@ -33,7 +33,7 @@ resource "google_cloud_run_v2_service" "default" {
     }
 
     containers {
-      image = "europe-central2-docker.pkg.dev/prj-d-ai-ai-yb1q/bydgoszcz-ai/bydgoszcz-ai-image"
+      image = "europe-central2-docker.pkg.dev/prj-d-ai-ai-yb1q/bydgoszcz-ai/bydgoszcz-ai-image:v0.2.0-alpha"
 
       env {
         name = "PROJECT_ID"
