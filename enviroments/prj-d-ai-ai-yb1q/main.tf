@@ -124,5 +124,5 @@ resource "google_sql_database_instance" "instance" {
     }
   }
 
-  deletion_protection  = "true"
+  deletion_protection  = "false"
 }
