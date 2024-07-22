@@ -37,7 +37,7 @@ variable "environment" {
 
 variable "database_machine_type" {
   description = "Machine type of created database"
-  default     = "db-f1-micro"
+  default     = "db-g1-small"
 }
 
 variable "database_highly_available" {

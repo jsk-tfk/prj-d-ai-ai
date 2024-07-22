@@ -28,7 +28,6 @@ module "lb-http" {
 
   ssl                             = var.ssl
   managed_ssl_certificate_domains = [var.domain]
-  https_redirect                  = var.ssl
   labels                          = { "example-label" = "cloud-run-ai" }
 
   backends = {
@@ -42,7 +41,7 @@ module "lb-http" {
       enable_cdn = false
 
       iap_config = {
-        enable = false
+        enable = true
       }
       log_config = {
         enable = false
@@ -67,12 +66,12 @@ resource "google_cloud_run_v2_service" "default" {
   ingress = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
 
   template {
-    #volumes {
-    #  name = "cloudsql"
-    #  cloud_sql_instance {
-    #    instances = [google_sql_database_instance.instance.connection_name]
-    #  }
-    #}
+    volumes {
+      name = "cloudsql"
+      cloud_sql_instance {
+        instances = [google_sql_database_instance.instance.connection_name]
+      }
+    }
 
     containers {
       image = "europe-central2-docker.pkg.dev/prj-d-ai-ai-yb1q/bydgoszcz-ai/bydgoszcz-ai-image:v0.2.0-alpha"
@@ -83,19 +82,19 @@ resource "google_cloud_run_v2_service" "default" {
         name = "PROJECT_ID"
         value = "prj-d-ai-ai-yb1q"
       }
-      #env {
-      #  name = "SECRET_ENV_VAR"
-      #  value_source {
-      #    secret_key_ref {
-      #      secret = google_secret_manager_secret.secret.secret_id
-      #      version = "1"
-      #    }
-      #  }
-      #}
-      #volume_mounts {
-      #  name = "cloudsql"
-      #  mount_path = "/cloudsql"
-      #}
+      env {
+        name = "SECRET_ENV_VAR"
+        value_source {
+          secret_key_ref {
+            secret = google_secret_manager_secret.secret.secret_id
+            version = "1"
+          }
+        }
+      }
+      volume_mounts {
+        name = "cloudsql"
+        mount_path = "/cloudsql"
+      }
     }
   }
 
@@ -103,30 +102,39 @@ resource "google_cloud_run_v2_service" "default" {
     type = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
     percent = 100
   }
-  #depends_on = [google_secret_manager_secret_version.secret-version-data]
+  depends_on = [google_secret_manager_secret_version.secret-version-data]
 }
 
-#data "google_project" "project" {
-#}
+data "google_project" "project" {
+}
 
-#resource "google_secret_manager_secret" "secret" {
-#  secret_id = "secret-1"
-#  replication {
-#    auto {}
-#  }
-#}
+resource "google_cloud_run_service_iam_binding" "default" {
+  location = google_cloud_run_v2_service.default.location
+  service  = google_cloud_run_v2_service.default.name
+  role     = "roles/run.invoker"
+  members = [
+    "allUsers"
+  ]
+}
 
-#resource "google_secret_manager_secret_version" "secret-version-data" {
-#  secret = google_secret_manager_secret.secret.name
-#  secret_data = "secret-data"
-#}
+resource "google_secret_manager_secret" "secret" {
+  secret_id = "secret-1"
+  replication {
+    auto {}
+  }
+}
 
-#resource "google_secret_manager_secret_iam_member" "secret-access" {
-#  secret_id = google_secret_manager_secret.secret.id
-#  role      = "roles/secretmanager.secretAccessor"
-#  member    = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
-#  depends_on = [google_secret_manager_secret.secret]
-#}
+resource "google_secret_manager_secret_version" "secret-version-data" {
+  secret = google_secret_manager_secret.secret.name
+  secret_data = "secret-data"
+}
+
+resource "google_secret_manager_secret_iam_member" "secret-access" {
+  secret_id = google_secret_manager_secret.secret.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+  depends_on = [google_secret_manager_secret.secret]
+}
 
 #resource "google_compute_network" "private_network" {
 #  name = "ai-network"
@@ -149,20 +157,19 @@ resource "google_cloud_run_v2_service" "default" {
 #  provider = google-beta
 #}
 #
-#resource "google_sql_database_instance" "instance" {
-#  name             = "cloudrun-ai-sql"
-#  region           = var.gce_region
-#  database_version = "POSTGRES_15"
-#
-#  depends_on = [google_service_networking_connection.private_vpc_connection]
-#  settings {
-#    tier = var.database_machine_type
-#    ip_configuration {
-#      ipv4_enabled                                  = false
-#      private_network                               = google_compute_network.private_network.id
-#      enable_private_path_for_google_cloud_services = true
-#    }
-#  }
-#
-#  deletion_protection  = "false"
-#}
+resource "google_sql_database_instance" "instance" {
+  name             = "cloudrun-chat-sql"
+  region           = var.gce_region
+  database_version = "POSTGRES_15"
+
+  #depends_on = [google_service_networking_connection.private_vpc_connection]
+  settings {
+    tier = var.database_machine_type
+    #ip_configuration {
+    #  ipv4_enabled                                  = false
+    #  private_network                               = google_compute_network.private_network.id
+    #  enable_private_path_for_google_cloud_services = true
+    #}
+  }
+  deletion_protection  = "false"
+}
