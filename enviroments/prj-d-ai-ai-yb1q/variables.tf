@@ -13,7 +13,20 @@ variable "gce_zone" {
   default = "europe-central2-c"
 }
 
+variable "lb_name" {
+  default = "project-ai"
+}
 
+variable "ssl" {
+  description = "Run load balancer on HTTPS and provision managed certificate with provided `domain`."
+  type        = bool
+  default     = true
+}
+variable "domain" {
+  description = "Custom domain for the Load Balancer."
+  type        = string
+  default     = "chat.tfkable.dev"
+}
 variable "env_suffix" {
   default = "acc"
 }
