@@ -41,7 +41,7 @@ module "lb-http" {
       enable_cdn = false
 
       iap_config = {
-        enable = true
+        enable = false
       }
       log_config = {
         enable = false
