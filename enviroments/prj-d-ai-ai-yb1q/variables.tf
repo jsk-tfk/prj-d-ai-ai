@@ -49,3 +49,13 @@ variable "delete_database_instance_on_destroy" {
   description = "When set to true it will delete database instance on `terraform destroy`"
   default     = false
 }
+
+variable "iap_client_secret" {
+  description = "value"
+  default = null
+}
+
+variable "iap_client_id" {
+  description = "value"
+  default = null
+}

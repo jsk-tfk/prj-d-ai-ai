@@ -42,6 +42,8 @@ module "lb-http" {
 
       iap_config = {
         enable = false
+        #oauth2_client_id     = var.iap_client_id
+        #oauth2_client_secret = var.iap_client_secret
       }
       log_config = {
         enable = false
