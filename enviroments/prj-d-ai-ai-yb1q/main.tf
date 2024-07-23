@@ -6,7 +6,7 @@
 #}
 
 
-resource "google_project_service" "project" {
+resource "google_project_service" "project_services" {
   for_each = toset([
     "sqladmin.googleapis.com",
     "secretmanager.googleapis.com",
