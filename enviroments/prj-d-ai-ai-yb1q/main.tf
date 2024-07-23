@@ -85,14 +85,37 @@ resource "google_cloud_run_v2_service" "default" {
         value = "prj-d-ai-ai-yb1q"
       }
       env {
-        name = "SECRET_ENV_VAR"
+        name  = "INSTANCE_CONNECTION_NAME"
+        value = google_sql_database_instance.instance.connection_name
+      }
+      env {
+        name = "DB_USER"
         value_source {
           secret_key_ref {
-            secret = google_secret_manager_secret.secret.secret_id
+            secret = google_secret_manager_secret.dbuser.secret_id
             version = "1"
           }
         }
       }
+      env {
+        name = "DB_PASS"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.dbpass.secret_id
+            version = "1"
+          }
+        }
+      }
+      env {
+        name = "DB_NAME"
+        value_source {
+          secret_key_ref {
+            secret  = google_secret_manager_secret.dbname.secret_id
+            version = "1"
+          }
+        }
+      }
+
       volume_mounts {
         name = "cloudsql"
         mount_path = "/cloudsql"
@@ -104,10 +127,7 @@ resource "google_cloud_run_v2_service" "default" {
     type = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
     percent = 100
   }
-  depends_on = [google_secret_manager_secret_version.secret-version-data]
-}
-
-data "google_project" "project" {
+  depends_on = [google_secret_manager_secret_version.dbuser_data]
 }
 
 resource "google_cloud_run_service_iam_binding" "default" {
@@ -119,25 +139,76 @@ resource "google_cloud_run_service_iam_binding" "default" {
   ]
 }
 
-resource "google_secret_manager_secret" "secret" {
-  secret_id = "secret-1"
+# Create dbuser secret
+resource "google_secret_manager_secret" "dbuser" {
+  secret_id = "dbusersecret"
   replication {
     auto {}
   }
+  depends_on = [google_project_service.secretmanager_api]
 }
 
-resource "google_secret_manager_secret_version" "secret-version-data" {
-  secret = google_secret_manager_secret.secret.name
+resource "google_secret_manager_secret_version" "dbuser_data" {
+  secret = google_secret_manager_secret.dbuser.name
   secret_data = "secret-data"
 }
 
 resource "google_secret_manager_secret_iam_member" "secret-access" {
-  secret_id = google_secret_manager_secret.secret.id
+  secret_id = google_secret_manager_secret.dbuser.id
   role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
-  depends_on = [google_secret_manager_secret.secret]
+  member    = "serviceAccount:${var.gce_project}-compute@developer.gserviceaccount.com"
+#  depends_on = [google_secret_manager_secret.dbuser]
 }
 
+resource "random_password" "db_password" {
+  length  = 16
+  special = true
+}
+
+# Create dbpass secret
+resource "google_secret_manager_secret" "dbpass" {
+  secret_id = "dbpasssecret"
+  replication {
+    auto {}
+  }
+  depends_on = [google_project_service.secretmanager_api]
+}
+
+# Attaches secret data for dbpass secret
+resource "google_secret_manager_secret_version" "dbpass_data" {
+  secret      = google_secret_manager_secret.dbpass.id
+  secret_data = random_password.db_password.result
+}
+
+# Update service account for dbpass secret
+resource "google_secret_manager_secret_iam_member" "secretaccess_compute_dbpass" {
+  secret_id = google_secret_manager_secret.dbpass.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${var.gce_project}-compute@developer.gserviceaccount.com" # Project's compute service account
+}
+
+
+# Create dbname secret
+resource "google_secret_manager_secret" "dbname" {
+  secret_id = "dbnamesecret"
+  replication {
+    auto {}
+  }
+  depends_on = [google_project_service.secretmanager_api]
+}
+
+# Attaches secret data for dbname secret
+resource "google_secret_manager_secret_version" "dbname_data" {
+  secret      = google_secret_manager_secret.dbname.id
+  secret_data = "secret-data" # Stores secret as a plain txt in state
+}
+
+# Update service account for dbname secret
+resource "google_secret_manager_secret_iam_member" "secretaccess_compute_dbname" {
+  secret_id = google_secret_manager_secret.dbname.id
+  role      = "roles/secretmanager.secretAccessor"
+  member    = "serviceAccount:${var.gce_project}-compute@developer.gserviceaccount.com" # Project's compute service account
+}
 #resource "google_compute_network" "private_network" {
 #  name = "ai-network"
 #}
