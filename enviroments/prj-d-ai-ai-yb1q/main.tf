@@ -130,6 +130,9 @@ resource "google_cloud_run_v2_service" "default" {
   depends_on = [google_secret_manager_secret_version.dbuser_data]
 }
 
+data "google_project" "project" {
+}
+
 resource "google_cloud_run_service_iam_binding" "default" {
   location = google_cloud_run_v2_service.default.location
   service  = google_cloud_run_v2_service.default.name
@@ -156,7 +159,7 @@ resource "google_secret_manager_secret_version" "dbuser_data" {
 resource "google_secret_manager_secret_iam_member" "secret-access" {
   secret_id = google_secret_manager_secret.dbuser.id
   role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${var.gce_project}-compute@developer.gserviceaccount.com"
+  member    = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
 #  depends_on = [google_secret_manager_secret.dbuser]
 }
 
@@ -184,7 +187,7 @@ resource "google_secret_manager_secret_version" "dbpass_data" {
 resource "google_secret_manager_secret_iam_member" "secretaccess_compute_dbpass" {
   secret_id = google_secret_manager_secret.dbpass.id
   role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${var.gce_project}-compute@developer.gserviceaccount.com" # Project's compute service account
+  member    = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com" # Project's compute service account
 }
 
 
@@ -207,7 +210,7 @@ resource "google_secret_manager_secret_version" "dbname_data" {
 resource "google_secret_manager_secret_iam_member" "secretaccess_compute_dbname" {
   secret_id = google_secret_manager_secret.dbname.id
   role      = "roles/secretmanager.secretAccessor"
-  member    = "serviceAccount:${var.gce_project}-compute@developer.gserviceaccount.com" # Project's compute service account
+  member    = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com" # Project's compute service account
 }
 #resource "google_compute_network" "private_network" {
 #  name = "ai-network"
