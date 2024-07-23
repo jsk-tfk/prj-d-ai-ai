@@ -145,7 +145,7 @@ resource "google_secret_manager_secret" "dbuser" {
   replication {
     auto {}
   }
-  depends_on = [google_project_service.secretmanager_api]
+  depends_on = [google_project_service.project_services["secretmanager.googleapis.com"]]
 }
 
 resource "google_secret_manager_secret_version" "dbuser_data" {
@@ -171,7 +171,7 @@ resource "google_secret_manager_secret" "dbpass" {
   replication {
     auto {}
   }
-  depends_on = [google_project_service.secretmanager_api]
+  depends_on = [google_project_service.project_services["secretmanager.googleapis.com"]]
 }
 
 # Attaches secret data for dbpass secret
@@ -194,7 +194,7 @@ resource "google_secret_manager_secret" "dbname" {
   replication {
     auto {}
   }
-  depends_on = [google_project_service.secretmanager_api]
+  depends_on = [google_project_service.project_services["secretmanager.googleapis.com"]]
 }
 
 # Attaches secret data for dbname secret
