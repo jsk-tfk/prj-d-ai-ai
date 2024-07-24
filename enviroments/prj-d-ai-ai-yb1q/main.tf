@@ -235,7 +235,7 @@ resource "google_secret_manager_secret_iam_member" "secretaccess_compute_dbname"
 #
 resource "google_sql_database" "database" {
   name     = "chat"
-  instance = google_sql_database_instance.instance.name
+  instance = google_sql_database_instance.instance.connection_name
 }
 resource "google_sql_database_instance" "instance" {
   name             = "cloudrun-chat-sql"
@@ -266,6 +266,6 @@ resource "google_sql_database_instance" "instance" {
 #}
 resource "google_sql_user" "iam_group_user" {
   name     = "ai-users@tfkable.eu"
-  instance = google_sql_database_instance.instance.name
+  instance = google_sql_database_instance.instance.connection_name
   type     = "CLOUD_IAM_GROUP"
 }
