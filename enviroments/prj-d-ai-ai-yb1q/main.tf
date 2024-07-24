@@ -203,7 +203,7 @@ resource "google_secret_manager_secret" "dbname" {
 # Attaches secret data for dbname secret
 resource "google_secret_manager_secret_version" "dbname_data" {
   secret      = google_secret_manager_secret.dbname.id
-  secret_data = "secret-data" # Stores secret as a plain txt in state
+  secret_data = google_sql_database.database.name
 }
 
 # Update service account for dbname secret
@@ -233,6 +233,10 @@ resource "google_secret_manager_secret_iam_member" "secretaccess_compute_dbname"
 #  provider = google-beta
 #}
 #
+resource "google_sql_database" "database" {
+  name     = "chat"
+  instance = google_sql_database_instance.instance.name
+}
 resource "google_sql_database_instance" "instance" {
   name             = "cloudrun-chat-sql"
   region           = var.gce_region
@@ -241,6 +245,10 @@ resource "google_sql_database_instance" "instance" {
   #depends_on = [google_service_networking_connection.private_vpc_connection]
   settings {
     tier = var.database_machine_type
+    database_flags {
+      name  = "cloudsql_iam_authentication"
+      value = "on"
+    }
     #ip_configuration {
     #  ipv4_enabled                                  = false
     #  private_network                               = google_compute_network.private_network.id
@@ -248,4 +256,16 @@ resource "google_sql_database_instance" "instance" {
     #}
   }
   deletion_protection  = "false"
+}
+#resource "google_sql_user" "iam_service_account_user" {
+#  # Note: for Postgres only, GCP requires omitting the ".gserviceaccount.com" suffix
+#  # from the service account email due to length limits on database usernames.
+#  name     = trimsuffix(google_service_account.service_account.email)
+#  instance = google_sql_database_instance.instance.name
+#  type     = "CLOUD_IAM_SERVICE_ACCOUNT"
+#}
+resource "google_sql_user" "iam_group_user" {
+  name     = "ai-users@tfkable.eu"
+  instance = google_sql_database_instance.instance.name
+  type     = "CLOUD_IAM_GROUP"
 }
