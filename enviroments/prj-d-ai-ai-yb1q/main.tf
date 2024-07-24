@@ -241,21 +241,17 @@ resource "google_sql_database_instance" "instance" {
   name             = "cloudrun-chat-sql"
   region           = var.gce_region
   database_version = "POSTGRES_15"
+  deletion_protection  = "false"
 
   #depends_on = [google_service_networking_connection.private_vpc_connection]
   settings {
     tier = var.database_machine_type
-    #database_flags {
-    #  name  = "cloudsql_iam_authentication"
-    #  value = "on"
-    #}
-    #ip_configuration {
-    #  ipv4_enabled                                  = false
-    #  private_network                               = google_compute_network.private_network.id
-    #  enable_private_path_for_google_cloud_services = true
-    #}
+
+    database_flags {
+      name  = "cloudsql_iam_authentication"
+      value = "on"
+    }
   }
-  deletion_protection  = "false"
 }
 #resource "google_sql_user" "iam_service_account_user" {
 #  # Note: for Postgres only, GCP requires omitting the ".gserviceaccount.com" suffix
