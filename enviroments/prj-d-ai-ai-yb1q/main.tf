@@ -260,7 +260,6 @@ data "google_secret_manager_secret_version_access" "dbpass_data_access" {
 resource "google_sql_user" "users" {
   name     = "me"
   instance = google_sql_database_instance.instance.name
-  host     = "me.com"
   password = data.google_secret_manager_secret_version_access.dbpass_data_access.secret_data
 }
 #resource "google_sql_user" "iam_service_account_user" {
