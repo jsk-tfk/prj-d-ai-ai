@@ -254,7 +254,8 @@ resource "google_sql_database_instance" "instance" {
   }
 }
 data "google_secret_manager_secret_version_access" "dbpass_data_access" {
-  secret = "${google_secret_manager_secret.dbpass.id}/versions/latest"
+  secret = google_secret_manager_secret.dbpass.id
+  version = "latest"
 }
 resource "google_sql_user" "users" {
   name     = "me"
