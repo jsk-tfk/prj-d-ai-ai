@@ -235,7 +235,7 @@ resource "google_secret_manager_secret_iam_member" "secretaccess_compute_dbname"
 #
 resource "google_sql_database" "database" {
   name     = "chat"
-  instance = google_sql_database_instance.instance.connection_name
+  instance = google_sql_database_instance.instance.name
 }
 resource "google_sql_database_instance" "instance" {
   name             = "cloudrun-chat-sql"
@@ -245,10 +245,10 @@ resource "google_sql_database_instance" "instance" {
   #depends_on = [google_service_networking_connection.private_vpc_connection]
   settings {
     tier = var.database_machine_type
-    database_flags {
-      name  = "cloudsql_iam_authentication"
-      value = "on"
-    }
+    #database_flags {
+    #  name  = "cloudsql_iam_authentication"
+    #  value = "on"
+    #}
     #ip_configuration {
     #  ipv4_enabled                                  = false
     #  private_network                               = google_compute_network.private_network.id
@@ -266,6 +266,6 @@ resource "google_sql_database_instance" "instance" {
 #}
 resource "google_sql_user" "iam_group_user" {
   name     = "ai-users@tfkable.eu"
-  instance = google_sql_database_instance.instance.connection_name
+  instance = google_sql_database_instance.instance.name
   type     = "CLOUD_IAM_GROUP"
 }
