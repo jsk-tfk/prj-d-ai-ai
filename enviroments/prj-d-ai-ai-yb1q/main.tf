@@ -153,7 +153,7 @@ resource "google_secret_manager_secret" "dbuser" {
 
 resource "google_secret_manager_secret_version" "dbuser_data" {
   secret = google_secret_manager_secret.dbuser.name
-  secret_data = "secret-data"
+  secret_data = "chat-ai"
 }
 
 resource "google_secret_manager_secret_iam_member" "secret-access" {
@@ -258,7 +258,7 @@ data "google_secret_manager_secret_version_access" "dbpass_data_access" {
   version = "latest"
 }
 resource "google_sql_user" "users" {
-  name     = "me"
+  name     = google_secret_manager_secret_version.dbuser_data.secret_data
   instance = google_sql_database_instance.instance.name
   password = data.google_secret_manager_secret_version_access.dbpass_data_access.secret_data
 }
