@@ -248,7 +248,7 @@ resource "google_sql_database_instance" "instance" {
     tier = var.database_machine_type
 
     database_flags {
-      name  = "cloudsql_iam_authentication"
+      name  = "cloudsql.iam_authentication"
       value = "on"
     }
   }
