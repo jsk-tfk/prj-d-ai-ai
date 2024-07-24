@@ -253,6 +253,15 @@ resource "google_sql_database_instance" "instance" {
     }
   }
 }
+data "google_secret_manager_secret_version_access" "dbpass_data_access" {
+  secret = "${google_secret_manager_secret.dbpass.id}/versions/latest"
+}
+resource "google_sql_user" "users" {
+  name     = "me"
+  instance = google_sql_database_instance.instance.name
+  host     = "me.com"
+  password = data.google_secret_manager_secret_version_access.dbpass_data_access.secret_data
+}
 #resource "google_sql_user" "iam_service_account_user" {
 #  # Note: for Postgres only, GCP requires omitting the ".gserviceaccount.com" suffix
 #  # from the service account email due to length limits on database usernames.
