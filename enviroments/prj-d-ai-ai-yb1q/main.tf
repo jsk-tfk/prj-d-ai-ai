@@ -115,7 +115,6 @@ resource "google_cloud_run_v2_service" "default" {
           }
         }
       }
-
       volume_mounts {
         name = "cloudsql"
         mount_path = "/cloudsql"
@@ -127,7 +126,10 @@ resource "google_cloud_run_v2_service" "default" {
     type = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
     percent = 100
   }
-  depends_on = [google_secret_manager_secret_version.dbuser_data]
+  depends_on = [
+    google_secret_manager_secret_version.dbuser_data,
+    google_secret_manager_secret_version.dbpass_data
+  ]
 }
 
 data "google_project" "project" {
