@@ -62,6 +62,9 @@ resource "google_compute_region_network_endpoint_group" "serverless_neg" {
   }
 }
 
+resource "google_service_account" "cloudrun_service_identity" {
+  account_id = "cloud-run"
+}
 resource "google_cloud_run_v2_service" "default" {
   name     = "cloudrun-service"
   location = var.gce_region
@@ -74,15 +77,10 @@ resource "google_cloud_run_v2_service" "default" {
         instances = [google_sql_database_instance.instance.connection_name]
       }
     }
-
     containers {
-      image = "europe-central2-docker.pkg.dev/prj-d-ai-ai-yb1q/bydgoszcz-ai/bydgoszcz-ai-image:v0.2.0-alpha"
+      image = "europe-central2-docker.pkg.dev/prj-d-ai-ai-yb1q/bydgoszcz-ai/bydgoszcz-ai-image:development"
       ports {
         container_port = 8000
-      }
-      env {
-        name = "PROJECT_ID"
-        value = "prj-d-ai-ai-yb1q"
       }
       env {
         name  = "INSTANCE_CONNECTION_NAME"
