@@ -79,6 +79,10 @@ resource "google_cloud_run_v2_service" "default" {
     }
     containers {
       image = "europe-central2-docker.pkg.dev/prj-d-ai-ai-yb1q/bydgoszcz-ai/bydgoszcz-ai-image:development"
+      #resources {
+      #  limits = {
+      #    memory = "1024Mi"
+      #  }
       ports {
         container_port = 8000
       }
@@ -118,6 +122,7 @@ resource "google_cloud_run_v2_service" "default" {
         mount_path = "/cloudsql"
       }
     }
+    service_account = google_service_account.cloudrun_service_identity.email
   }
 
   traffic {
